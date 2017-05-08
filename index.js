@@ -39,6 +39,11 @@ app.get('/', function(req, res) {
   res.status(200).send('I dream of being a website.  Please star the parse-server repo on GitHub!');
 });
 
+// Test Restful API
+app.get('/notes', function(req, res) {
+  res.json({notes: "This is my first NodeJS restful API!"})
+})
+
 // There will be a test page available on the /test path of your server url
 // Remove this before launching your app
 app.get('/test', function(req, res) {
