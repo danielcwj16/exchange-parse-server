@@ -4,6 +4,9 @@
 var express = require('express');
 var ParseServer = require('parse-server').ParseServer;
 var path = require('path');
+var stripe = require('stripe')(
+    'sk_test_AvB1Bo2w7dMpWHEqhBeudBBP'
+);
 
 var databaseUri = process.env.DATABASE_URI || process.env.MONGODB_URI;
 
@@ -34,6 +37,31 @@ app.use('/public', express.static(path.join(__dirname, '/public')));
 var mountPath = process.env.PARSE_MOUNT || '/parse';
 app.use(mountPath, api);
 
+// Server charge API on Charge Router
+var chargeRouter = express.Router();
+
+//List all Charges
+chargeRouter.route('/Charges')
+    .get(function(req,res){
+      stripe.charges.list(
+        function(err,charges){
+          res.json(charges)
+        }
+      )
+    })
+
+//Retrieve Charge by id
+chargeRouter.route('/Charges/:chargeId')
+    .get(function(req,res){
+      stripe.charges.retrieve(
+        req.params.chargeId,
+        function(err,charge){
+          res.json(charge)
+        }
+      )
+    })
+app.use('/api',chargeRouter);
+
 // Parse Server plays nicely with the rest of your web routes
 app.get('/', function(req, res) {
   res.status(200).send('I dream of being a website.  Please star the parse-server repo on GitHub!');
@@ -53,7 +81,7 @@ app.get('/test', function(req, res) {
 var port = process.env.PORT || 1337;
 var httpServer = require('http').createServer(app);
 httpServer.listen(port, function() {
-    console.log('parse-server-example running on port ' + port + '.');
+    console.log('parse-server-example app running on port ' + port + '.');
 });
 
 // This will enable the Live Query real-time server
